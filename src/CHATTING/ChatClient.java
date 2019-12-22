@@ -72,7 +72,7 @@ public class ChatClient extends JFrame implements Runnable {
 
 				// 자신의 접속 사실을 서버에 메시지로 전송
 				try {
-					dos.writeUTF("[" + name.getText() + "] : 안녕하세요?\n");
+					dos.writeUTF(Timer.getTime() + " :: [" + name.getText() + "]님이 입장하습니다 \n");
 					dos.flush();
 				} catch (IOException ioe) {
 					memo.append("Connect error\n");
@@ -106,10 +106,10 @@ public class ChatClient extends JFrame implements Runnable {
 		public void actionPerformed(ActionEvent e) {
 			System.out.println(name.getText() + "가 서버로 메시지 보냄");
 			try {
-				dos.writeUTF("[" + name.getText() + "] : " + message.getText()); // 서버에 메시지 보냄
+				dos.writeUTF(Timer.getTime() + " :: [" + name.getText() + "] : " + message.getText()); // 서버에 메시지 보냄
 				dos.flush();
 			} catch (IOException ioe) {
-				memo.append("Message Sending error\n");
+				memo.append("Message Sending Error\n");
 			}
 			message.setText("");// 입력 필드 비움
 		}
@@ -118,9 +118,9 @@ public class ChatClient extends JFrame implements Runnable {
 	//disconnect 버튼 처리 리스너
 	class DisconnectListener implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
-			System.out.println("DisCennecting start");
+			System.out.println("Discennecting start");
 			try {
-				dos.writeUTF("[" + name.getText() + "] : " + "BYE");
+				dos.writeUTF(Timer.getTime() + " :: [" + name.getText() + "] : " + "BYE");
 				dos.flush();
 			} catch (IOException ioe) {}
 			connect_flag = false;
@@ -131,6 +131,23 @@ public class ChatClient extends JFrame implements Runnable {
 				s.close();
 				System.exit(0);
 			} catch (IOException ioe) {}
+		}
+	}
+	
+	static class Timer {
+		public static String getTime() {
+			StringBuffer time = new StringBuffer();
+			Date now = new Date();
+			int hrs = now.getHours();
+			int min = now.getMinutes();
+			
+			if(hrs > 13) time.append(hrs - 12);
+	 		else time.append(hrs);
+	 		time.append(":");
+			if(min < 10) time.append("0" + Integer.toString(min));
+			else time.append(min);
+			
+			return time.toString();
 		}
 	}
 }
