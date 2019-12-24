@@ -3,13 +3,21 @@ package CHATTING;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.net.Socket;
 import java.util.Date;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
 
-import javax.swing.*;
-
-public class ChatClient2 extends JFrame implements Runnable {
+public class PrototypeClient extends JFrame implements Runnable {
 	final int PORT = 4000;
 	String HOST = "localhost";
 	Socket s;
@@ -22,16 +30,16 @@ public class ChatClient2 extends JFrame implements Runnable {
 	boolean connect_flag = false; // 서버와 연결 상태
 
 	public static void main(String[] args) {
-		new ChatClient();
+		new PrototypeClient();
 	}
 
-	ChatClient2() {
+	PrototypeClient() {
 		JPanel panel = new JPanel();
 		JLabel nameLabel = new JLabel("Chatterer name: ");
 		name = new JTextField(12);
 		connect = new JButton("Connect");
-		disconnect = new JButton("Disconnect");
 		connect.addActionListener(new CennectListener());
+		disconnect = new JButton("DisConnect");
 		disconnect.addActionListener(new DisconnectListener());
 		panel.add(nameLabel);
 		panel.add(name);
@@ -67,13 +75,14 @@ public class ChatClient2 extends JFrame implements Runnable {
 				}
 				memo.append(name.getText() + "의 Socket 연결 성공\n");
 				// 통신할 스레드 생성 및 발진
-				new Thread(ChatClient2.this).start();
+				new Thread(PrototypeClient.this).start();
 				connect_flag = true;// 연결로 표시
 
 				// 자신의 접속 사실을 서버에 메시지로 전송
 				try {
-					dos.writeUTF(Timer.getTime() + " :: [" + name.getText() + "]님이 입장하습니다 \n");
+					dos.writeUTF("[" + name.getText() + "]" + " 안녕하세요?\n");
 					dos.flush();
+
 				} catch (IOException ioe) {
 					memo.append("Connect error\n");
 				}
@@ -84,9 +93,10 @@ public class ChatClient2 extends JFrame implements Runnable {
 			}
 		}
 	} // end CennectListener
-	//채팅 메시지를 읽어 TextArea에 갈무리
 
+	//채팅 메시지를 읽어 TextArea에 갈무리
 	public void run() {
+
 		while (connect_flag) {
 			String data = null;
 			try {
@@ -106,10 +116,10 @@ public class ChatClient2 extends JFrame implements Runnable {
 		public void actionPerformed(ActionEvent e) {
 			System.out.println(name.getText() + "가 서버로 메시지 보냄");
 			try {
-				dos.writeUTF(Timer.getTime() + " :: [" + name.getText() + "] - " + message.getText()); // 서버에 메시지 보냄
+				dos.writeUTF("[" + name.getText() + "]" + message.getText()); // 서버에 메시지 보냄
 				dos.flush();
 			} catch (IOException ioe) {
-				memo.append("Message Sending Error\n");
+				memo.append("Message Sending error\n");
 			}
 			message.setText("");// 입력 필드 비움
 		}
@@ -118,11 +128,12 @@ public class ChatClient2 extends JFrame implements Runnable {
 	//disconnect 버튼 처리 리스너
 	class DisconnectListener implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
-			System.out.println("Discennecting start");
+			System.out.println("DisCennecting start");
 			try {
-				dos.writeUTF(Timer.getTime() + " :: [" + name.getText() + "] - " + "BYE");
+				dos.writeUTF("[" + name.getText() + "]" + "BYE");
 				dos.flush();
-			} catch (IOException ioe) {}
+			} catch (IOException ioe) {
+			}
 			connect_flag = false;
 			try {
 				//Client 측 스트림 및 소켓 닫기
@@ -130,24 +141,8 @@ public class ChatClient2 extends JFrame implements Runnable {
 				dis.close();
 				s.close();
 				System.exit(0);
-			} catch (IOException ioe) {}
-		}
-	}
-	
-	static class Timer {
-		public static String getTime() {
-			StringBuffer time = new StringBuffer();
-			Date now = new Date();
-			int hrs = now.getHours();
-			int min = now.getMinutes();
-			
-			if(hrs > 13) time.append(hrs - 12);
-	 		else time.append(hrs);
-	 		time.append(":");
-			if(min < 10) time.append("0" + Integer.toString(min));
-			else time.append(min);
-			
-			return time.toString();
+			} catch (IOException ioe) {
+			}
 		}
 	}
 }
